@@ -32,6 +32,7 @@ plugins/neo-product/                 The Product loop — same shape, grouped by
   plugin.json                        Copilot plugin manifest
   agents/                            neo.<domain>.<role>.agent.md
   skills/                            Copilot skills — neo-<name>/SKILL.md
+  commands/                          slash commands — neo-<name>.md (e.g. /neo-design → neo-design-thinking)
   hooks/hooks.json                   Copilot hook config (v1 schema, ${PLUGIN_ROOT})
   hooks/scripts/log-event.sh         its own copy — plugins can't share files
 .github/plugin/marketplace.json      Copilot marketplace (root, lists plugins[])

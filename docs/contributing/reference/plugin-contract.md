@@ -53,6 +53,7 @@ plugins/neo-core/
 ├── plugin.json                       # Copilot plugin manifest — the required file, at the plugin root
 ├── agents/                           # Copilot subagents — dotted neo.<role>.agent.md
 ├── skills/                           # Copilot Agent Skills, e.g. neo-task-authoring/SKILL.md
+├── commands/                         # optional slash commands, neo-<name>.md (neo-product only today; see §4.1)
 ├── hooks/
 │   ├── hooks.json                    # Copilot hook schema (v1, camelCase events, ${PLUGIN_ROOT})
 │   └── scripts/
@@ -76,6 +77,7 @@ failing to load**.
 | `plugin.json`                        | Plugin metadata (name, version, author, keywords, …) plus the `agents`/`skills`/`hooks` paths.  |
 | `agents/`                            | Subagent definitions, one dotted `neo.<role>.agent.md` file per role.                            |
 | `skills/`                            | Agent Skills, e.g. `neo-task-authoring/SKILL.md`.                                                |
+| `commands/`                          | Optional. Slash commands, one `neo-<name>.md` file each — a short address for a skill (see [§4.1](#41-command-surfaces-for-skills)). `neo-product` ships `neo-design.md`. |
 | `hooks/hooks.json`                   | Lifecycle-logging hooks, Copilot event names, `${PLUGIN_ROOT}`, versioned schema (`"version": 1`). A shipped manifest registers no fail-closed event. |
 | `hooks/scripts/log-event.sh`         | The observability logger `hooks.json` shells out to (fail-open). See [observability.md](../guides/observability.md). |
 | `hooks/scripts/enforce-guardrails.sh` | The opt-in `preToolUse` enforcement hook on Unix (fail-closed): blocks commit/push to `main` and non-draft PRs. Shipped but **not** wired by `hooks.json`; a consuming repo opts in. A `.ps1` sibling covers Windows. See [enforcement.md](../guides/enforcement.md). |
@@ -133,6 +135,7 @@ them is still valid.
 | `agents`      | `"agents/"`                                      | Optional; defaults to `agents/`. | Required — declared explicitly even though it matches the default. |
 | `skills`      | `"skills/"`                                      | Optional; defaults to `skills/`. | Required — declared explicitly even though it matches the default. |
 | `hooks`       | `"hooks/hooks.json"`                             | Optional; no default. | Required whenever the plugin ships hooks. |
+| `commands`    | `"commands/"` (`neo-product` only)               | Optional; no default. | Required whenever the plugin ships commands. |
 
 **Why declare paths that match the default.** Relying on an implicit default is what hid the
 skills bug: the key was simply absent, so nothing looked wrong in review. Declaring all three
@@ -271,6 +274,8 @@ sits in a marketplace alongside others.
   the Agent Skills spec defines a `metadata:` map for exactly this, alongside `name`,
   `description`, `license`, `compatibility`, and `allowed-tools` — and on spec-conformant
   packaging paths any *other* top-level key is a hard error, not an ignored field.
+- **Command files:** `commands/neo-<name>.md`. The filename is the bare slash command, so the
+  `neo-` prefix lives in the filename. See [§4.1](#41-command-surfaces-for-skills).
 - **Copilot skill directory:** `skills/neo-<name>/SKILL.md`, and the frontmatter `name:`
   matches the directory name (e.g. `skills/neo-feature-authoring/SKILL.md` →
   `name: neo-feature-authoring`).
@@ -290,3 +295,75 @@ shipped plugin vendors a skill today; every current skill is Neo-authored. `neo-
 plugins can't share files (see [§1](#1-plugin-folder-shape), "No cross-plugin file
 references"). The per-plugin inventory lives in
 [`stack-plugin-contract.md` § What ships](./stack-plugin-contract.md#what-ships).
+
+### 4.1 Command surfaces for skills
+
+**Decision (issue #90).** A skill that owns several activities gets a deterministic,
+sub-command address. The skill keeps its canonical `neo-<name>` identifier, and the plugin may
+add a **short slash command** — a `commands/neo-<short>.md` file — that does nothing but hand
+its arguments to that skill. `neo-product` ships the first one, `/neo-design <activity>`, for
+`neo-design-thinking`. The short name is still `neo-` prefixed; an unprefixed `/design` is not
+shipped. This is option (b) from issue #90 (an alias layer over the canonical skill), in its
+namespaced form, so the §4 prefix rule needs no exception.
+
+**Evidence: Copilot CLI has a declarative command mechanism, and no skill-alias field.**
+
+- `FACT` — A legacy `plugin.json` accepts `commands`, "Path(s) to command directories", with no
+  default ([CLI plugin reference § Component path fields](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference#component-path-fields),
+  fetched 2026-10-21).
+- `FACT` — "Commands are an alternative to skills stored as individual `.md` files … The command
+  name is derived from the filename. Command files use a simplified format (no `name` field
+  required) and support `argument-hint`, `description`, `allowed-tools`, and
+  `disable-model-invocation`. Commands have lower priority than skills with the same name."
+  ([CLI command reference § Commands (alternative skill format)](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference#commands-alternative-skill-format),
+  fetched 2026-10-21).
+- `FACT` — The skill frontmatter fields are `name`, `description`, `argument-hint`,
+  `allowed-tools`, `user-invocable`, and `disable-model-invocation`; a skill is invoked as
+  `/SKILL-NAME`. There is **no alias field** — a skill has exactly one slash name (same page,
+  § Skill frontmatter fields).
+- `FACT` — "When two plugins provide skills with the same name, both coexist using
+  plugin-qualified invocation names such as `/my-plugin/search` … This applies to skills only;
+  commands keep the standard tier-based deduplication, where the higher-priority source wins."
+  (same page, § Skill locations).
+- `FACT` — Probed on Copilot CLI 1.0.102 with a throwaway plugin declaring `"commands":
+  "commands/"` in a throwaway `COPILOT_HOME`: `copilot -p "/neo-probe draft scope"` ran the
+  command file and the model received `draft scope` (multi-token arguments arrive intact);
+  `/neo-probe` alone received no arguments; a command body saying "invoke the `neo-probe-skill`
+  skill" loaded and ran that plugin skill with the arguments. Placeholders in the command body
+  (`$ARGUMENTS`, `$1`, `{{args}}`) were **not** substituted — the arguments travel in the user
+  message, so a command body must refer to them in prose, not by placeholder.
+
+**Why namespaced, not `/design`.** Skills that collide fall back to a plugin-qualified name;
+commands do not — the higher-priority source wins and the other is unreachable. An unprefixed
+`/design` (or `/prd`) is a likely collision in a shared marketplace, so it would either shadow
+another plugin's command or be shadowed by one, with no way back to ours. `/neo-design` keeps
+§4's guarantee. The canonical skill form, `/neo-design-thinking <activity>`, always works too.
+A user who wants the bare `/design` can add a personal skill or command of that name; at
+personal scope it is their own choice to make, not one a shipped plugin makes for them.
+`scripts/validate-plugins.py` fails any command file not named `neo-<name>.md`.
+
+**The mechanism, which every Neo Product skill reuses.** It is designed once here; the
+`neo-systems-thinking` (#91) and `neo-product-requirements` (#92) issues apply it rather than
+redesigning it. Their command names are theirs to settle; `/neo-systems` and `/neo-prd` follow
+the pattern.
+
+1. **One shim, no logic.** The command file names the canonical skill, passes the user's
+   arguments verbatim, and sets `disable-model-invocation: true` so the model only ever
+   auto-loads the skill itself. All resolution lives in the skill's `## Commands` section, so the
+   short command and the canonical skill behave identically.
+2. **A Commands table** in the skill: sub-command (the owning reference's file stem), aliases,
+   and reference. Matching is case-insensitive and exact.
+3. **No argument → menu plus one recommendation**, derived from the artifacts already on disk.
+   Never auto-run.
+4. **Unknown sub-command → menu with the nearest match called out.** Never guess.
+5. **Prose arguments → the skill's existing natural-language routing**, unchanged. Direct
+   dispatch is additive.
+6. **Preconditions always run, and the skill tells the user it ran them.** A sub-command skips
+   trigger matching only — never a pre-flight, a required prior artifact, or a non-negotiable
+   principle. "Run the precondition, and say what it found" is the default shape.
+7. **Optional further tokens.** The first token selects the sub-command. A skill may define a
+   second axis (for example a mode before the topic, `/neo-prd draft scope`) in its own table;
+   otherwise the remaining words are context for the activity, not further sub-commands. The
+   probe above confirms multi-token arguments reach the skill intact.
+8. **Sub-command names are a public surface.** Adding an activity or alias is safe; renaming or
+   removing one is breaking — keep the old name as an alias.
