@@ -41,13 +41,15 @@ human); the verdict is not a vote.
 2. **Consultation is required.** Before signing, the BE consults the technical lead and any other
    participant the team convened for this gate. A signature given without that consultation has
    not passed the gate.
-3. **Dissent is recorded, not voted on.** If a consulted participant disagrees, the BE may still
-   sign, but the dissent — who, what, and why — is recorded on the artifact being signed: the
-   feature, the task-set approval, or the verification record. A signer who overrides recorded
+3. **The verdict is recorded on the signed artifact.** Each gate has one: the accepted
+   segmentation (Boundary 0), the feature and its task-set approval (Boundary 1), and the
+   verification record (Boundary 3). The record names the signer and every participant consulted.
+4. **Dissent is recorded, not voted on.** If a consulted participant disagrees, the BE may still
+   sign, but the dissent — who, what, and why — joins that record. A signer who overrides recorded
    dissent owns that call.
-4. **Continuity of intent.** At least one participant present when a feature was signed stays
-   involved through its verification at Boundary 3. Membership may change; it may not turn over
-   completely.
+5. **Continuity of intent.** At least one participant recorded on a signed feature stays involved
+   through its verification at Boundary 3; the Boundary 3 record shows who. Membership may change;
+   it may not turn over completely.
 
 **Why this rule.** Consensus softens gates and stalls them; a veto per member multiplies blockers
 by headcount. An accountable signer keeps one owner per decision — the BE named as gate owner

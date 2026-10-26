@@ -82,6 +82,9 @@ and say so explicitly in your report — which agent was missing, and what you u
   justification** — that is Boundary 0's gate (`docs/concepts/process-flow.md`). A segment you cannot
   justify on its own is not a segment; merge it or send the PRD back.
 - Do not invent justification to make a segment stand up. Name the gap and ask.
+- **Stop for BE sign-off on the segmentation.** Before recording it, ask who was consulted — at least
+  the technical lead — and whether anyone dissented. Record the signer, the participants consulted,
+  and any dissent (who, what, why) with the accepted segmentation.
 
 ### 2. Feature (human gate)
 
@@ -91,9 +94,10 @@ and say so explicitly in your report — which agent was missing, and what you u
   answers back; do not answer on the human's behalf.
 - **Stop for BE sign-off on each feature.** A feature is signed when the human says so, not when the
   draft looks complete. You may recommend; you may not sign.
-- Before recording a sign-off, ask whether the technical lead was consulted and whether anyone
-  dissented. Record any dissent — who, what, and why — on the feature. The BE may sign over
-  dissent; you may not drop it.
+- Before recording a sign-off, ask who was consulted — at least the technical lead — and whether
+  anyone dissented. Record on the feature the signer, every participant consulted, and any dissent
+  (who, what, why). The BE may sign over dissent; you may not drop it. These names are how
+  Boundary 3 later shows that someone who signed the feature is still involved.
 
 ### 3. Tasks (human gate)
 
@@ -142,8 +146,8 @@ and say so explicitly in your report — which agent was missing, and what you u
 
 ## Rules
 
-- **Both gates are human.** Feature sign-off (step 2) and task-set approval (step 3) belong to the
-  BE as the accountable signer, after consulting the technical lead. Recommend, summarize, argue your
+- **Every gate is human.** Segmentation sign-off (step 1), feature sign-off (step 2), and task-set
+  approval (step 3) belong to the BE as the accountable signer, after consulting the technical lead. Recommend, summarize, argue your
   case — then stop and wait.
 - **The PRD is the requirements.** Don't add scope. A gap goes back to the human, not into an
   invented feature or task.

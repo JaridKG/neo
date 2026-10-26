@@ -165,10 +165,8 @@ retired (see
 **Decided (issue #113): an accountable signer.** Three candidates were weighed: **consensus**
 (principle 7 warns it softens), **single-member veto** (principle 7's preference: easy to fail, hard
 to pass), and an **accountable signer** who must convene the team but makes the call. Neo adopts the
-third. The BE signs after consulting the technical lead, any dissent is recorded on the signed
-artifact, and at least one signing participant stays through verification. The rule is owned by
-[process-flow.md § Gate decision rule](../../concepts/process-flow.md#gate-decision-rule) and not
-restated here. Principle 7's veto is deliberately not adopted: recorded dissent keeps disagreement
+third; the rule itself is owned by
+[process-flow.md § Gate decision rule](../../concepts/process-flow.md#gate-decision-rule). Principle 7's veto is deliberately not adopted: recorded dissent keeps disagreement
 visible and attributable without giving each member a blocker.
 
 ---
