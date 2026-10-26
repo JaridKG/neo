@@ -51,14 +51,14 @@ Acceptance criteria are what the planner maps units to and what the PR claims to
 
 1. **Named section first.** Find a Markdown heading (any level, case-insensitive, trailing `:` ignored) whose text is `Acceptance criteria`, `Validation criteria`, `Definition of done`, or `AC`. Its items run until the next heading of the same or higher level. Each list item (`- `, `* `, `1. `, with or without `[ ]` / `[x]`) becomes one criterion; indented continuation lines join their item, and nested sub-bullets stay inside their parent's text. `[x]` → `done: true`, `[ ]` → `done: false`, a plain bullet → `done: null`. Set `acceptance_criteria_source` to `section:<heading text>`. If the section holds prose but no list, take each non-empty paragraph as one criterion and add the warning `acceptance criteria section has no list — paragraphs taken as criteria`.
    - `Validation criteria` is the Neo task carrier's name for this list (the canonical task body has `## Parent feature`, `## What`, `## Validation criteria`, `## Depends on`); it **is** the acceptance criteria.
-2. **Otherwise, task lists.** If there is no such section but the body has task-list items (`- [ ]` / `- [x]`), take them all, set `acceptance_criteria_source` to `checklist`, and add the warning `acceptance criteria inferred from body task list — confirm with the user`.
+2. **Otherwise, task lists.** If there is no such section but the body has task-list items (`- [ ]` / `- [x]`), take them all, set `acceptance_criteria_source` to `checklist`, and add the warning `acceptance criteria inferred from body task list — not a named criteria section; the consumer routes the task back before branching`.
 3. **Otherwise, none.** `acceptance_criteria: []`, `acceptance_criteria_source: "none"`.
 
 Rules:
 
 - Keep each criterion's text verbatim — strip only the list marker and checkbox. Don't rephrase, merge, split, or "clarify".
 - Criteria proposed only in **comments** are not acceptance criteria. Mention them in `comments_summary` and add the warning `comments propose acceptance criteria not in the body` — the user decides whether they count.
-- `missing_acceptance_criteria` is `true` exactly when `acceptance_criteria` is empty. The consumer then stops before planning — a task carrier is routed back to the Specification loop — and this skill never fills the gap.
+- `missing_acceptance_criteria` is `true` exactly when `acceptance_criteria` is empty. The consumer then stops before branching — a task carrier is routed back to the Specification loop — and this skill never fills the gap.
 
 ## 4. The normalized spec
 
