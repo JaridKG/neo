@@ -97,15 +97,16 @@ and say so explicitly in your report — which agent was missing, and what you u
 - Before recording a sign-off, ask who was consulted — at least the technical lead — and whether
   anyone dissented. Record on the feature the signer, every participant consulted, and any dissent
   (who, what, why). The BE may sign over dissent; you may not drop it. These names are how
-  Boundary 3 later shows that someone who signed the feature is still involved.
+  Boundary 3 later shows that someone recorded on the signed feature is still involved.
 
 ### 3. Tasks (human gate)
 
 - **Delegate each signed feature to `Neo Task Planner`.**
 - Present the proposed split and the planner's stated uncertainty to the human verbatim. Converge.
 - **Stop for BE approval of the task *set*** — not task by task. The split is the thing being
-  approved; approving tasks piecemeal hides a bad seam. Apply the same consultation and
-  dissent-recording check as step 2 before recording the approval.
+  approved; approving tasks piecemeal hides a bad seam. Before recording the approval, run the same
+  consultation and dissent check as step 2, and record the signer, participants consulted, and any
+  dissent on the task-set approval itself — not on the feature.
 - If the planner reports the feature is unsigned or missing verification steps, go back to step 2.
 
 ### 4. File the tasks
