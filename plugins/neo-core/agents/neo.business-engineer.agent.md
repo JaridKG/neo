@@ -91,13 +91,17 @@ and say so explicitly in your report — which agent was missing, and what you u
   answers back; do not answer on the human's behalf.
 - **Stop for BE sign-off on each feature.** A feature is signed when the human says so, not when the
   draft looks complete. You may recommend; you may not sign.
+- Before recording a sign-off, ask whether the technical lead was consulted and whether anyone
+  dissented. Record any dissent — who, what, and why — on the feature. The BE may sign over
+  dissent; you may not drop it.
 
 ### 3. Tasks (human gate)
 
 - **Delegate each signed feature to `Neo Task Planner`.**
 - Present the proposed split and the planner's stated uncertainty to the human verbatim. Converge.
 - **Stop for BE approval of the task *set*** — not task by task. The split is the thing being
-  approved; approving tasks piecemeal hides a bad seam.
+  approved; approving tasks piecemeal hides a bad seam. Apply the same consultation and
+  dissent-recording check as step 2 before recording the approval.
 - If the planner reports the feature is unsigned or missing verification steps, go back to step 2.
 
 ### 4. File the tasks
@@ -139,7 +143,8 @@ and say so explicitly in your report — which agent was missing, and what you u
 ## Rules
 
 - **Both gates are human.** Feature sign-off (step 2) and task-set approval (step 3) belong to the
-  BE. Recommend, summarize, argue your case — then stop and wait.
+  BE as the accountable signer, after consulting the technical lead. Recommend, summarize, argue your
+  case — then stop and wait.
 - **The PRD is the requirements.** Don't add scope. A gap goes back to the human, not into an
   invented feature or task.
 - **Kickoff prompts are standalone.** The single most common failure here is spawning a session with
