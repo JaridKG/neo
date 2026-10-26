@@ -71,8 +71,8 @@ identically). Both ship in `neo-product`.
 
 - **`/neo-design` on its own** shows this menu and recommends one activity based on what already
   exists in `docs/design/`. It never starts an activity until you pick one.
-- **A name it doesn't know** (say, `/neo-design jouney`) gets the menu with the nearest match
-  called out — it doesn't guess.
+- **A name it doesn't know** (say, `/neo-design jouney` or `/neo-design audit`) gets the menu,
+  with the nearest match called out when there is one — it never guesses or starts an activity.
 - **Words after the activity** are context: `/neo-design journey-map new admin onboarding`.
 - **It still checks your existing work first.** `/neo-design persona` in a repo that already has
   personas tells you what it found and extends them rather than quietly adding a near-duplicate.

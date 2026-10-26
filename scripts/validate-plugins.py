@@ -737,7 +737,7 @@ def check_marketplace(path: Path) -> None:
         # CLI 1.0.81: an entry that was the sole declarant loaded zero skills, and one that
         # declared an outright false path still loaded correctly. Keeping a copy here means
         # maintaining a value nothing reads, which reads as live config to the next person.
-        for key in ("agents", "skills", "hooks"):
+        for key in ("agents", "skills", "commands", "hooks"):
             if key in entry:
                 errors.append(
                     f"[marketplace] {name} declares {key}: {entry[key]!r}, which the CLI "
