@@ -95,6 +95,8 @@ When `AGENT_RUN_ID` is unset, the loggers derive `run` themselves (see
 
 Each line: `ts`, `run` (correlation id), `event`, `agent`, `tool`, `status`, `session`, and a truncated `prompt`. Default log path is `~/.agent-logs/events.jsonl` (override with `AGENT_LOG_DIR`).
 
+Opted-in guardrail denials also land here as `guardrailDenied` records — see [enforcement.md](enforcement.md) § Denial records.
+
 `run` is resolved by the same ordered fallback in both loggers — the first non-empty value wins:
 
 1. **`AGENT_RUN_ID`** — set it to correlate all events for one spec/task explicitly.
