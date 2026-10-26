@@ -144,6 +144,8 @@ The story-grade work-item type is fixed at project setup (§1, Naming caution).
 - May assume all required fields (§2) are present and the task is `be-approved`. If a required
   field is missing or the approval marker is absent, it stops and routes back — it does **not**
   invent scope to fill the gap ([`neo-code-writer`](../../../plugins/neo-core/agents/neo.code-writer.agent.md)).
+  The [`neo-technical-engineer`](../../../plugins/neo-core/agents/neo.technical-engineer.agent.md) enforces
+  this as its **intake gate**, right after normalization (§6) and before it creates a branch.
 - Reads the **Validation criteria** as the spec's **acceptance criteria** it plans and
   validates against (§ naming reconciliation).
 
@@ -189,7 +191,7 @@ normative copy** — change it here first, then update every intake skill to mat
 | `description` | string | The body / `Description`, verbatim. |
 | `acceptance_criteria` | `{text, done}[]` | Extracted, never authored. `done` is `true` \| `false` \| `null` (not a checkbox). These are the task's **validation criteria** (§5, naming reconciliation). |
 | `acceptance_criteria_source` | string | `section:<heading>`, `checklist`, `field:<name>` (Azure DevOps), or `none`. |
-| `missing_acceptance_criteria` | boolean | `true` exactly when `acceptance_criteria` is empty. The consumer then stops and asks the user. |
+| `missing_acceptance_criteria` | boolean | `true` exactly when `acceptance_criteria` is empty. The consumer then stops and routes the task back (§5). |
 | `labels` | string[] | GitHub labels; Azure DevOps tags. |
 | `parent` | item \| null | The parent issue / work item (the task's **parent feature**, §2). |
 | `sub_items` | item[] | Sub-issues / child work items. |
@@ -210,6 +212,10 @@ The orchestrator classifies the raw spec reference before choosing an intake ski
 
 - A `github.com` (or authenticated GitHub Enterprise) issue URL, `<owner>/<repo>#<n>`, or
   `#<n>` → `github`. A pull-request URL is not a spec.
+  A GitHub reference resolves to `<host>`, `<owner>`, `<repo>`, `<n>`; shorthand (`<owner>/<repo>#<n>`,
+  `#<n>`) takes `<host>` from the current repo (`gh repo view --json nameWithOwner,url`). The host
+  is kept for every call — `gh auth status --hostname <host>`, `gh issue view --repo <host>/<owner>/<repo>`
+  on GitHub Enterprise, `gh api --hostname <host>` for REST fallbacks — and in the GHE `id`.
 - A `dev.azure.com` or `*.visualstudio.com` work-item URL, or `AB#<id>` → `azure-devops`.
 - A bare number is ambiguous: resolved by the repo's git remotes (GitHub-only → `github`,
   Azure DevOps-only → `azure-devops`), otherwise by asking the user.

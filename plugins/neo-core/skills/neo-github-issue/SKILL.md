@@ -11,14 +11,13 @@ Retrieve, don't recall. Every field comes from a `gh` call made in this session;
 
 ## 1. Detect the provider
 
-Classify the input before fetching anything. Trim whitespace and surrounding `<>`/quotes first.
+Classify the input before fetching anything. Trim whitespace and surrounding `<>`/quotes first. A GitHub reference always resolves to four parts — `<host>`, `<owner>`, `<repo>`, `<n>` — and **`<host>` is carried through every later call and into the normalized `id`**, so a GitHub Enterprise issue is never looked up on github.com.
 
 | Input | Provider | Resolves to |
 | --- | --- | --- |
-| `https://github.com/<owner>/<repo>/issues/<n>` (optionally with `#issuecomment-…` or a query string) | `github` | `<owner>/<repo>`, `<n>` |
-| `https://<ghe-host>/<owner>/<repo>/issues/<n>` where `<ghe-host>` is a host `gh auth status` reports | `github` | same; pass `--repo <ghe-host>/<owner>/<repo>` |
-| `<owner>/<repo>#<n>` | `github` | `<owner>/<repo>`, `<n>` |
-| `#<n>` | `github` | the current repo — `gh repo view --json nameWithOwner --jq .nameWithOwner` |
+| `https://<host>/<owner>/<repo>/issues/<n>` (optionally with `#issuecomment-…` or a query string), where `<host>` is `github.com` or a host `gh auth status` reports | `github` | all four parts from the URL |
+| `<owner>/<repo>#<n>` | `github` | `<owner>`, `<repo>`, `<n>`; `<host>` is the current repo's host (below) when run inside a GitHub repo, else `github.com` |
+| `#<n>` | `github` | the current repo — `gh repo view --json nameWithOwner,url --jq '"\(.url \| split("/")[2]) \(.nameWithOwner)"'` prints `<host> <owner>/<repo>` |
 | `https://dev.azure.com/<org>/<project>/_workitems/edit/<id>`, `https://<org>.visualstudio.com/…/_workitems/edit/<id>`, or `AB#<id>` | `azure-devops` | the Azure DevOps intake skill — see below |
 | bare `<n>` (no `#`) | ambiguous | see below |
 
@@ -28,9 +27,9 @@ Classify the input before fetching anything. Trim whitespace and surrounding `<>
 
 ## 2. Fetch
 
-Preflight: `gh auth status` must succeed for the target host. If it doesn't, stop and tell the user to run `gh auth login`. Use `gh` through the shell — in Copilot CLI the `github/*` MCP tool names grant nothing.
+Preflight: `gh auth status --hostname <host>` must succeed. If it doesn't, stop and tell the user to run `gh auth login`. Use `gh` through the shell — in Copilot CLI the `github/*` MCP tool names grant nothing.
 
-Fetch the issue in one call (`<R>` is `<owner>/<repo>`, or `<host>/<owner>/<repo>` for GHE):
+Fetch the issue in one call. `<R>` is `<owner>/<repo>` when `<host>` is `github.com`, and `<host>/<owner>/<repo>` otherwise — never drop the host for GHE:
 
 ```bash
 gh issue view <n> --repo <R> --json \
@@ -38,13 +37,13 @@ number,title,body,url,state,stateReason,labels,issueType,comments,\
 parent,subIssues,blockedBy,blocking,closedByPullRequestsReferences
 ```
 
-- `parent`, `subIssues`, `blockedBy`, `blocking`, `closedByPullRequestsReferences`, and `issueType` need a recent `gh` (verified on 2.102). If `gh` rejects any field as unknown, retry with the baseline fields only — `number,title,body,url,state,stateReason,labels,comments` — and fetch parent and sub-issues over REST:
-  - Parent: `gh api repos/<owner>/<repo>/issues/<n>/parent --jq '{number,title,state,url:.html_url}'`. HTTP 404 `No parent issue found` means no parent, not an error.
-  - Sub-issues: `gh api --paginate repos/<owner>/<repo>/issues/<n>/sub_issues --jq '.[] | {number,title,state,url:.html_url}'`.
+- `parent`, `subIssues`, `blockedBy`, `blocking`, `closedByPullRequestsReferences`, and `issueType` need a recent `gh` (verified on 2.102). If `gh` rejects any field as unknown, retry with the baseline fields only — `number,title,body,url,state,stateReason,labels,comments` — and fetch parent and sub-issues over REST (every `gh api` call passes `--hostname <host>`; without it `gh api` defaults to `github.com`):
+  - Parent: `gh api --hostname <host> repos/<owner>/<repo>/issues/<n>/parent --jq '{number,title,state,url:.html_url}'`. HTTP 404 `No parent issue found` means no parent, not an error.
+  - Sub-issues: `gh api --hostname <host> --paginate repos/<owner>/<repo>/issues/<n>/sub_issues --jq '.[] | {number,title,state,url:.html_url}'`.
   - Anything still unavailable (blockers, closing PRs, issue type) takes its empty value, with a warning naming what couldn't be fetched.
 - If `subIssues.totalCount` exceeds the number of `subIssues.nodes` returned, page the REST sub-issues endpoint for the rest.
 - Not found or no access (`Could not resolve to an Issue`, HTTP 404/403): stop and report the exact error. Never guess the issue's content.
-- Linked items can live in other repos. Build each item's `id` from its own URL, not from the current repo.
+- Linked items can live in other repos. Build each item's `id` from its own URL (host included when it isn't `github.com`), not from the current repo.
 
 ## 3. Extract acceptance criteria
 
@@ -59,7 +58,7 @@ Rules:
 
 - Keep each criterion's text verbatim — strip only the list marker and checkbox. Don't rephrase, merge, split, or "clarify".
 - Criteria proposed only in **comments** are not acceptance criteria. Mention them in `comments_summary` and add the warning `comments propose acceptance criteria not in the body` — the user decides whether they count.
-- `missing_acceptance_criteria` is `true` exactly when `acceptance_criteria` is empty. The consumer then stops and asks the user before planning; this skill never fills the gap.
+- `missing_acceptance_criteria` is `true` exactly when `acceptance_criteria` is empty. The consumer then stops before planning — a task carrier is routed back to the Specification loop — and this skill never fills the gap.
 
 ## 4. The normalized spec
 
@@ -98,7 +97,7 @@ Field mapping for GitHub:
 | Field | Type | GitHub source |
 | --- | --- | --- |
 | `provider` | `"github"` \| `"azure-devops"` | always `"github"` here |
-| `id` | string | `<owner>/<repo>#<number>` (host-prefixed for GHE) — the cross-reference form |
+| `id` | string | `<owner>/<repo>#<number>` on `github.com`; `<host>/<owner>/<repo>#<number>` on GitHub Enterprise — the cross-reference form, host kept |
 | `number` | integer | `number` — for branch names (`feat/<number>-<slug>`) and `Closes #<number>` |
 | `url` | string | `url` |
 | `title` | string | `title`, verbatim |
@@ -127,5 +126,5 @@ Every top-level key is always present. A relationship that couldn't be retrieved
 
 - Report the normalized spec as a fenced `json` block, then one line each for: missing acceptance criteria (yes/no), warning count, and the issue URL.
 - `state: "closed"` → confirm with the user before working a closed issue.
-- `missing_acceptance_criteria: true`, or a warning that criteria were inferred or contradicted → the consumer asks the user before planning. Don't invent requirements.
+- `missing_acceptance_criteria: true`, or criteria inferred from a checklist → the consumer stops before branching; for a task carrier it checks the required fields and the `be-approved` label and routes back if either is missing. A warning that criteria were contradicted → the consumer asks the user before planning. Don't invent requirements.
 - Pass the whole object to every worker that needs the spec; workers never see the issue themselves.
