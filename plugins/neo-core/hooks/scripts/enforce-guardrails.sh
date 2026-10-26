@@ -41,6 +41,21 @@ set -o pipefail
 
 allow() { exit 0; }  # empty stdout == allow
 
+# Same "run" fallback as log-event.sh (issue #99), so denial records join the logger's
+# records: AGENT_RUN_ID -> branch of payload cwd -> branch of hook cwd -> session -> unknown.
+# A detached HEAD reports "HEAD", which is not a useful key, so it counts as no branch.
+denial_run() {
+  local b="${AGENT_RUN_ID:-}"
+  if [ -z "$b" ] && [ -n "${cwd:-}" ] && [ -d "$cwd" ]; then
+    b="$(git -C "$cwd" rev-parse --abbrev-ref HEAD 2>/dev/null)"; [ "$b" = "HEAD" ] && b=""
+  fi
+  if [ -z "$b" ]; then
+    b="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"; [ "$b" = "HEAD" ] && b=""
+  fi
+  [ -z "$b" ] && b="${session:-}"
+  printf '%s' "${b:-unknown}"
+}
+
 # Append one guardrailDenied record. Derived fields only - never the payload or command.
 # Every stream is discarded and the status ignored, so nothing here can reach stdout
 # (which carries only the permission JSON) or change the exit code.
@@ -50,7 +65,7 @@ log_denial() {
     0|off|OFF|false|FALSE|no|NO) return 0 ;;
   esac
   NEO_DENY_RULE="$1" NEO_DENY_REASON="$2" NEO_DENY_TOOL="${tool:-}" NEO_DENY_SESSION="${session:-}" \
-  NEO_DENY_RUN="${AGENT_RUN_ID:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)}" \
+  NEO_DENY_RUN="$(denial_run)" \
   NEO_DENY_LOG_DIR="${AGENT_LOG_DIR:-$HOME/.agent-logs}" \
     python3 - >/dev/null 2>&1 <<'PY' || true
 import json, os, re, time

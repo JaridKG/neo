@@ -59,14 +59,25 @@ function Write-DenialLog([string]$Rule, [string]$ReasonCode) {
     try {
         if (@('0', 'off', 'false', 'no') -contains ("$env:NEO_LOG_HOOKS").ToLowerInvariant()) { return }
         $logDir = if ($env:AGENT_LOG_DIR) { $env:AGENT_LOG_DIR } else { Join-Path $HOME '.agent-logs' }
-        $runId = $env:AGENT_RUN_ID
-        if (-not $runId) {
+        # Same "run" fallback as log-event.ps1 (issue #99): AGENT_RUN_ID -> branch of payload
+        # cwd -> branch of hook cwd -> session -> unknown. Detached HEAD counts as no branch.
+        $branchOf = {
+            param([string]$dir)
             try {
-                $runId = (& git rev-parse --abbrev-ref HEAD 2>$null)
-                if ($runId -is [array]) { $runId = $runId[0] }
-                $runId = ("$runId").Trim()
-            } catch { $runId = $null }
+                $b = if ($dir) { & git -C $dir rev-parse --abbrev-ref HEAD 2>$null } else { & git rev-parse --abbrev-ref HEAD 2>$null }
+                if ($LASTEXITCODE -ne 0) { return '' }
+                if ($b -is [array]) { $b = $b[0] }
+                $b = ("$b").Trim()
+                if ($b -eq 'HEAD') { return '' }
+                return $b
+            } catch { return '' }
         }
+        $runId = $env:AGENT_RUN_ID
+        if (-not $runId -and $script:cwd -and (Test-Path -LiteralPath $script:cwd -PathType Container)) {
+            $runId = & $branchOf $script:cwd
+        }
+        if (-not $runId) { $runId = & $branchOf '' }
+        if (-not $runId -and $script:session) { $runId = "$($script:session)" }
         if (-not $runId) { $runId = 'unknown' }
         if ($runId.Length -gt 200) { $runId = $runId.Substring(0, 200) }
         $record = [ordered]@{

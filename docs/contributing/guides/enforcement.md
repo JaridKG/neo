@@ -271,7 +271,8 @@ convert a crash into allow-with-warning without swallowing a real verdict. Witho
 Every deny also appends **one** record to the observability log, so a team that opted in can
 answer how often the guardrail fired and which rule did it. It goes to the same file the
 logger writes — `$AGENT_LOG_DIR/events.jsonl`, default `~/.agent-logs/events.jsonl` — and
-`run` is derived the same way (`AGENT_RUN_ID`, else the current git branch, else `unknown`):
+`run` follows the logger's fallback order (see [observability.md](observability.md)), so denial
+records join the logger's records for the same run:
 
 ```json
 {"ts":"2026-10-26T20:55:11Z","run":"feat/42-login","session":"…","event":"guardrailDenied","tool":"bash","rule":"A1-push-protected-ref","decision":"deny","reason":"protected_branch"}
