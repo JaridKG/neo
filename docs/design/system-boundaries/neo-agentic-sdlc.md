@@ -572,7 +572,9 @@ in §11.1 answers it: judgment at these gates is **team-held by design**. Two co
 2. G5's remaining live question is **not** *single vs. team* but **what the decision rule is** —
    consensus, single-member veto, or an accountable signer who must convene but decides. **GAP** —
    searched `docs/glossary.md`, `docs/concepts/process-flow.md`, and
-   `plugins/neo-core/agents/neo.business-engineer.agent.md`; no decision rule is specified. Under
+   `plugins/neo-core/agents/neo.business-engineer.agent.md`; no decision rule is specified. (The
+   framework yardstick's principle 7 states a preference for single-member veto, but Neo has not
+   adopted it.) Under
    team-held judgment this is now the live design question, and it belongs in the handbook alongside
    the workshop standards.
 

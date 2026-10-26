@@ -107,7 +107,7 @@ backlog (`gh issue list --state open`) and the untracked loose ends in
 | **G2** — kill-condition gate at **build entry** | Boundary 1 | `todo.md` loose end only (back-door / KPI slice) | **Partial** | The loose end folds the *existing* KPI gate into the skill. The stronger move — a testability gate at the **front door** — is untracked, and is a genuine open design question. |
 | **G3** — **falsification-framed** verification | Boundary 3 | none (#14 is SRE/Platform-Eng ops agents) | **Untracked** | The default question is confirmatory ("does the feature behave as expected?"). Mitigated by the mis-built / mis-specified / both triage, but the word and the default still ask "does it work." |
 | **G4** — **strategic vs tactical** framing | whole spec loop | none | **Untracked** | Neo has one framing cadence (PRD → Feature → Task). No concept of a signal big enough to reopen the *system* vs spawn a *feature*. Includes the unresolved "what earns a strategic reopen?" |
-| **G5** — **decision rule** for the team-held gate | Boundaries 1 and 3 | none | **Untracked (open question)** | Judgment at the Specification and Verification gates is **team-held by design** — typically a business SME and a technical lead, both human — so the single-point-of-failure concern no longer applies. What is unspecified is *how the team decides*: consensus, single-member veto, or an accountable signer who convenes but decides. |
+| **G5** — **decision rule** for the team-held gate | Boundaries 1 and 3 | none | **Untracked (open question)** | Judgment at the Specification and Verification gates is **team-held by design** — typically a business SME and a technical lead, both human — so the single-point-of-failure concern no longer applies. What is not adopted is *how the team decides*: consensus, single-member veto (principle 7's stated preference), or an accountable signer who convenes but decides. |
 
 ### Notes on each
 
@@ -162,11 +162,12 @@ both. So principle 7's *team-held* half already holds, and the single-point-of-f
 retired (see
 [neo-agentic-sdlc.md § 11.5](../../design/system-boundaries/neo-agentic-sdlc.md#115-this-resolves-an-open-question-the-repo-already-carries)).
 
-What remains **open** is the **decision rule** — how a team-held gate reaches a verdict. Three
-candidates, none chosen here: **consensus** (principle 7 warns it softens), **single-member veto**
-(principle 7's preference: easy to fail, hard to pass), or an **accountable signer** who must convene
-the team but makes the call. Neo's docs and the `neo.business-engineer` agent specify none of
-these. This doc records the question; it does not presume an answer.
+What remains **open** is whether Neo **adopts a decision rule** — how a team-held gate reaches a
+verdict. Three candidates: **consensus** (principle 7 warns it softens), **single-member veto**
+(principle 7's stated preference: easy to fail, hard to pass), or an **accountable signer** who must
+convene the team but makes the call. The framework yardstick states a preference; Neo has not adopted
+it — the user-facing docs (glossary, process flow) and the `neo.business-engineer` agent specify
+no rule. This doc records the question; it does not presume an answer.
 
 ---
 
@@ -180,7 +181,8 @@ Carried forward from the dialog; none are settled:
    carry a front-door testability gate? (G2, principles 3–6.)
 3. **What decision rule governs the team-held gate** — consensus, single-member veto, or an
    accountable signer who convenes but decides? Team-held judgment is settled design intent and
-   coexists with the no-hand-off-BA principle; the rule is not. (G5, principle 7.)
+   coexists with the no-hand-off-BA principle; principle 7 prefers single-member veto, but Neo has
+   not adopted a rule. (G5, principle 7.)
 
 ---
 
