@@ -346,8 +346,9 @@ personal scope it is their own choice to make, not one a shipped plugin makes fo
 
 **The mechanism, which every Neo Product skill reuses.** It is designed once here; the
 `neo-systems-thinking` (#91) and `neo-product-requirements` (#92) issues apply it rather than
-redesigning it. Their command names are theirs to settle; `/neo-systems` and `/neo-prd` follow
-the pattern.
+redesigning it. Both issues were filed with unprefixed `/systems` and `/prd`; under this
+contract they ship namespaced as `/neo-systems` and `/neo-prd`, and each issue's examples and
+acceptance criteria read with that prefix. Their sub-command names remain theirs to settle.
 
 1. **One shim, no logic.** The command file names the canonical skill, passes the user's
    arguments verbatim, and sets `disable-model-invocation: true` so the model only ever
@@ -358,8 +359,9 @@ the pattern.
    them). The canonical command is chosen for the user to type; it does **not** have to equal the
    reference file's stem. `neo-design-thinking` happens to use the stems (`journey-mapping` →
    `journey-mapping.md`); #91 proposes `causal-loop` → `causal-loop-mapping.md` and #92 proposes
-   `scope` → `scope-definition.md`, and both are conformant. Where they differ, list the stem as
-   an alias so the long form still resolves. Every name — canonical or alias, on every axis — is
+   `scope` → `scope-definition.md`. Listing the stem as an alias where it differs is optional —
+   a skill may do it so the long form resolves, but the short command and its documented aliases
+   are sufficient. Every name — canonical or alias, on every axis — is
    lowercase kebab-case and unique within the skill. Matching is case-insensitive and exact.
 3. **No argument → menu plus one recommendation**, derived from the artifacts already on disk.
    Never auto-run.
