@@ -73,8 +73,10 @@ Then check `~/.agent-logs/events.jsonl` for the new line.
 
 To run the hooks by hand you need `PLUGIN_ROOT` pointed at the plugin (the dir
 containing `hooks/scripts/`), plus the optional `AGENT_LOG_DIR` / `AGENT_RUN_ID`.
-`scripts/setup-hook-env.{ps1,sh}` set all three (and the `COPILOT_`/`CLAUDE_`
-aliases) and create the log dir; the `teardown-hook-env` siblings clear them.
+`scripts/setup-hook-env.{ps1,sh}` set `PLUGIN_ROOT` (and the `COPILOT_`/`CLAUDE_`
+aliases) and `AGENT_LOG_DIR`, and create the log dir; the `teardown-hook-env`
+siblings clear them (and `AGENT_RUN_ID`). The setup scripts deliberately leave
+`AGENT_RUN_ID` alone — they never set it, and keep any value you exported.
 **Dot-source** them so the vars land in your current shell — running them
 normally only sets vars in a child process that then exits:
 
@@ -88,8 +90,9 @@ source scripts/setup-hook-env.sh                # or: source scripts/setup-hook-
 source scripts/teardown-hook-env.sh
 ```
 
-When `AGENT_RUN_ID` is unset, the loggers derive `run` themselves (see
-[What gets logged](#what-gets-logged)).
+With `AGENT_RUN_ID` unset, the loggers derive `run` themselves (see
+[What gets logged](#what-gets-logged)). To pin one correlation id instead,
+export it yourself (`export AGENT_RUN_ID=my-spec` / `$env:AGENT_RUN_ID = 'my-spec'`).
 
 ## What gets logged
 
