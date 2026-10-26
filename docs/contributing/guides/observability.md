@@ -105,6 +105,22 @@ Each line: `ts`, `run` (correlation id), `event`, `agent`, `tool`, `status`, `se
 
 A detached `HEAD` is not treated as a branch, so it falls through to the session id. Without `jq` the shell logger skips logging entirely (see [Install](#install)), so the payload-based steps only matter when a record is written.
 
+### Multiple Neo plugins
+
+`neo-core` and `neo-product` each register the same logging hooks, so each logs when installed
+alone. With both installed, Copilot fires **both** loggers for every event with the same payload
+(observed on CLI 1.0.103: every event was written twice before de-duplication). The loggers
+de-duplicate at write time: the first invocation atomically creates a claim file at
+`$AGENT_LOG_DIR/.claims/<sessionId>/<event>.<timestamp>` (hook event, the payload's `sessionId`,
+and its millisecond `timestamp`) and writes the record; the second finds the claim and skips. So
+`events.jsonl` gets one record per event however many Neo plugins are installed.
+
+- A payload missing `sessionId` or `timestamp` has no identity to key on and is logged by every
+  plugin. If the claim can't be written, the event is logged anyway — a duplicate beats a drop.
+- Claim directories idle for over a day are pruned at `sessionStart`. `.claims/` is safe to delete.
+- De-duplication saves log records, not process launches — both hooks still run (see the
+  Windows cost note above).
+
 ## Analyze
 
 ```bash
